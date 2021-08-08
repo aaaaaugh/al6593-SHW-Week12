@@ -1,0 +1,137 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\f0\fs22\lang9 CODE LAB 1 - WEEK 12 - INTRO TO OBJECT ORIENTED PROGRAMMING (cont.)\par
+
+\pard\sa200\sl276\slmult1  >Let's take a different scene - ShipExample. \par
+>In the scene, there is one enemy (with a bullet), and a ship. The bullet does 20 Damage, where as the ship as 1000 Health. \line >When you hit the Play scene, the ship is initially not damaged because of the Shield: Ship (BaseShield). After a couple of hits, the health starts going down. Let's take a look at the code.\line\line >Ship Control script.\par
+\tab\tab public class ShipControl : Monobehaviour \line\tab\tab //what is the super-class for ShipControl? Monobehaviour. \line\tab\tab //Monobehaviour makes the ShipControl a monobehaviour. \line\tab\tab //Monobehaviour allows the script to be attached to a game object,\line\tab\tab allowing it to become a component. It also gives it access to a bunch \line\tab\tab of other things, like calling the Start function and Update function. \line\tab\tab //It also allows for the OnCollisionEnter2D function. You get the idea...\line\line >Monobehaviour IS the reason why ShipControl has these powers. PLOT TWIST! We have been using Object Oriented Programming all along (without really knowing it), but Unity just provides it to us, as part of the skeleton we get when Unity makes a new C# script for us. \line\line >Now let's take a look again at our Ship Control script.\line\tab\line\tab\tab public class ShipControl : Monobehaviour\line\tab\tab\{\line\tab\tab\tab public KeyCode leftKey; //press left key  \line\tab\tab\tab public KeyCode rightKey; //press right key\line\tab\tab\tab //these can be changed on the component bc they are public\line\tab\line\tab\tab\tab public float forceMod = 100; \par
+\tab\tab\tab Rigidbody2D rb2d; \line\line\tab\tab\tab public float health = 100; \line\tab\tab\tab //it says 100 here, but it was 1000 in the scene. that's bc\line\tab\tab\tab you can change the number from the component\line\tab\tab\tab public TextMesh healthText; //reporting what the health is \line\line\tab\tab\tab BaseShield shield; \par
+\tab\tab\tab\line\tab\tab\tab void Start() \line\tab\tab\tab\{\line\tab\tab\tab\tab rb2d = GetComponent<Rigidbody2D>(); \line\tab\tab\tab\tab //setting rb2d to be equal to the Rigidbody2d that\line\tab\tab\tab\tab is attached to this game object.  \line\tab\tab\tab\tab shield = GetComponent<BaseShield>(); \line\tab\tab\tab\tab //getting the space shield component that's\line\tab\tab\tab\tab attached to this game object. \line\tab\tab\tab\}\par
+\tab\tab\tab void Update()\line\tab\tab\tab\{\line\tab\tab\tab if(Input.GetKey(leftKey))\{ //press left key\tab\tab\tab\tab\tab\tab\tab\tab rb2d.AddForce(Vector2.left * forceMod); //go left\line\tab\tab\tab\}\line\line\tab\tab\tab if(Input.GetKey(rightKey))\{ //press right key \line\tab\tab\tab\tab rb2d.AddForce(Vector2.right * forceMod); //go right\line\tab\tab\tab\}\line\tab\tab\tab\line\tab\tab\tab if(Input.GetKeyDown(KeyCode.B))  //press the 'b' button \line\tab\tab\tab\{\line\tab\tab\tab\tab Destroy(shield); //destroy shield, which is a component on\line\tab\tab\tab\tab\tab\tab our game object. \line\tab\tab\tab\tab shield = gameObject.AddComponent<BaseShield>(); \line\tab\tab\tab\tab //get a new shield by saying AddComponent<BaseShield>(); \line\tab\tab\tab\}\line\tab\tab\}\line\tab\tab\tab\line\tab\tab private void OnCollisionEnter2D(Collision2D(Collision2D collision)\line\tab\tab //when something hits the object \line\tab\tab\{\line\tab\tab\tab Destroy(collision.gameObject); //destroy bullet\line\tab\tab\tab TakeDamage(20); //ship will take 20 damage \line\tab\tab\}\line\line >You would think that the ship will take 20 damage everytime it gets hit by the bullet, but... \par
+\tab\tab public void TakeDamage(float damageAmt); \line\tab\line\tab\tab\tab if (shield != null) //if you have a shield\line\tab\tab\tab\{\line\tab\tab\tab\tab damageAmt = shield.AdjustDamage(damageAmt); \line\tab\tab\tab\tab //the shield is doing something to the damage your\line\tab\tab\tab\tab ship would usually take. \line\tab\tab\tab\}\line\tab\tab\tab\line\tab\tab\tab health -= damageAmt; //reduce health by w/e the damage is now\line\tab\tab\tab\tab\tab               //might be the same, or might be altered dmg\line\tab\tab\tab healthText.text = "Health: " + health; //update health either from \line\tab\tab\tab\tab\tab\tab\tab             //initial health or altered\line\tab\tab\line\tab\tab\tab if (shield != null) //if you have a shield\line\tab\tab\tab\{\line\tab\tab\tab\tab healthText.text += "\\nShield: " + shield.ToString(); \line\tab\tab\tab\tab //to say what kind of shield we have now \line\tab\tab\tab\}\par
+>Let's look at the Base Shield script. \par
+\tab\tab public class BaseShield : Monobehaviour\line\tab\tab\{\line\tab\tab\tab public float shieldStrength = 50; //initial shieldStrength, 50. \line\line\tab\tab public virutal float AdjustDamage(float damage)\{ //\fs20 when we call AdjustDamage\fs22\line\tab\tab\tab if(shieldStrength > damage)\{ \line\tab\tab\tab  \tab shieldStrength -= damage; //reduce shield strength. \line\tab\tab\tab\tab return 0; \line\tab\tab\tab //if 20 damage initially comes in. is 50 (shieldStrength) greater than\line\tab\tab\tab 20? YES. \line\tab\tab\tab //so we reduce the shieldStrength by the amount of damage. So now\line\tab\tab\tab it is 30. then we return 0, which means the ship takes no damage. \line\tab\tab\tab //BUT eventually no longer will shieldStrength > damage be true.\line   \line\tab\tab\tab\} else if (shieldStrength > 0)\{ // this gets applied if greater than 0, and \tab\tab\tab\tab\tab\tab\tab\tab not  greater than 20. otherwise we \line\tab\tab\tab\tab\tab\tab\tab wouldn't go to the else-if statement. \line\tab\tab\tab ^remember that this gets executed only once the previous if \tab\tab\tab\tab\tab statement no longer applies \line\tab\tab\tab\tab damage = damage - shieldStrength; //reduce dmg amnt \line\tab\tab\tab\tab //damage was 20, 20 - 10 = 10. \line\tab\tab\tab\tab shieldStrength = 0; //remove remaining shield\line\tab\tab\tab\tab return damage; //return 10 dmg. and the next time bullet\line\tab\tab\tab\tab\tab\tab shoots, you no longer have any shields. UH OH\line\tab\tab\tab\tab\tab\tab HEALTH GOES UH OHHHHH \line\tab\tab\tab\} else \{ //if shields are gone \line\tab\tab\tab\tab return damage; //return all the damage  \line\tab\tab\tab\}\line\tab\tab\}\par
+>Let's go back on ShipControl.cs. Now all this makes sense in context of what we looked at\par
+\tab\tab public void TakeDamage(float damageAmt)\{\line\tab\line\tab\tab if (shield != null) //if you have a shield\line\tab\tab\{\line\tab\tab\tab damageAmt = shield.AdjustDamage(damageAmt); //adjust dmg amnt\line\tab\tab\tab //this will reduce the damage \line\tab\tab\}\line\tab\tab\line\tab\tab health -= damageAmt; //reduce health by damage\line\tab\tab //whatever damage is left, we'll take from our health. \line\tab\tab healthText.text = "Health: " + health; //update health text\line\line\tab\tab if (shield != null) //if you have a shield\line\tab\tab\{\line\tab\tab\tab healthText.text += "\\nShield: " + shield.ToSTring(); \line\tab\tab\}\par
+>Watch it in action. You get hit a few times, and your shield is Taking Damage. But once you get hit a couple of more times, your Ship is now getting damaged as well - and its health goes down. \line\line >You call it BaseShield because... we can add MORE SHIELDS! \par
+>Create a new C# Script. Call it HalfDamage Shield. \par
+>We have to change some of our code in ShipControl.cs, right? WRONG. Turns out, you don't have to change ANY of the code that you have. All this code cares about, is your Baseshield, and it calls AdjustDamage. \line\line >So if you call your HalfDamageShield, extend of having it extend from Monobehaviour, you INSTEAD extend... BaseShield!!!! Then NOW, ShipControl doesn't care about whether or not you have HalfDamageShield OR BaseShield. Because HalfDamageShield is a sub-class of BaseShield now. \par
+\tab\tab public class HalfDamageShield : BaseShield\line\line >One problem though! You won't be able to add Monobehaviour to your HalfDamageShield component, right...? WRONG. Because BaseShield is a Monobehaviour!!!!!\par
+>THIS IS WRINKLING MY BRAIN \par
+>Which means HalfDamageShield is ALSO a Monobehaviour! Cool. Very cool. \par
+>So on your HalfDamageShield, even if you get rid of the Start and Update function... oof, would suck to have to write it again, huh? \par
+>W R O N G  YET  AGAIN! Right click... hmm. Generate??? HMMMM. Overriding members? Wazat??? \par
+>There's a list of things in here!\par
+\tab\tab Generate\par
+\tab\tab AdjustDamage(float damage): float\line\tab\tab GetHashCode().int\line\tab\tab Equals(object other):bool\line\tab\tab ToSTring().string\par
+>What's the top thing say? AdjustDamage!! Let's click on it and hope for the best???\par
+\tab\tab public class HalfDamageShield : BaseShield\line\tab\tab\{\line\tab\tab\tab public override float AdjustDamage(float damage) \line\tab\tab\tab\{\line\tab\tab\tab\tab return base.AdjustDamage(damage); \line\tab\tab\tab\}\line\tab\tab\}\par
+>This stuff appears! What's happening now??? So many things. \par
+>Look back at the BaseShield script. There's a function that says:\par
+\tab\tab public virtual float AdjustDamage(float damage)\{\par
+>What does virtual mean again? It means that sub-classes of Base Shield can override this function. So you can have HalfDamageShield do it's own thing. \line >Notice how it says override on the HalfDamageShield script? That means it's overriding the script that BaseShield has, because BaseShield has \i virtual\i0  included in it's function. How nice. \par
+>For now, what is it returning though? (For the HalfDamageShield script). \par
+\tab\tab public override float AdjustDamage(float damage)\line\tab\tab\{\line\tab\tab\tab return base.Adjust Damage(damage); \line\tab\tab\tab //it's returning what you wrote in the BaseShield script.\line\tab\tab\}\par
+\tab\tab ^It was call on the super class version of the function, which is BaseShield.\line\tab\tab All about hierarchy baby... \line\line >But instead of doing this, we are going to do...\line\line\tab\tab public override float AdjustDamage(float damage)\line\tab\tab\{\line\tab\tab\tab return damage / 2f; \line\tab\tab\tab //it is a half-damage shield so you are DIVIDING. WOOOOOo \line\tab\tab\}\par
+>Now if you go back to your Hierarchy view on your Unity, and select your Ship Game Object, let's say you removed component BaseShield script from it. And instead, you dragged the half-damage shield. Watch what happens to the scene... \par
+>Instead of taking the 20 damage, you are only taking 10 damage now! \par
+>ADMIRE how little code there is in HalfDamageShield script. You just added a tiny little witty bittle function and it's an entirely new game! You didn't have to adjust anything in ShipControl. All you had to do was make a new kind of shield, and drag it onto your GameObject. Awesome Possum. \par
+>Let's make A TELEPORT SHIELD. Make a new C# Script. Call it TeleportShield. \par
+\tab\tab public class TeleportShield : BaseShield //base shield is super class\par
+>Right click. Generate. Override members. \par
+>Click AdjustDamage(float damage): float\par
+>Alternatively, you can just start to type AdjustDamage - and have it do Code Completion.\par
+\tab\tab public class TeleportShield : BaseShield\line\tab\tab\{\line\tab\tab\tab public override float AdjustDamage(float damage)\line\tab\tab\tab\{\line\tab\tab\tab\tab return base.AdjustDamage(damage); \line\tab\tab\tab\}\line\tab\tab\}\par
+>WOW IT'S LIKE MAGIC. So now all you have to do is REMEMBER what you wanna do with this type of shield - TeleportShield... so we wanna Teleport away? What does that? \par
+>Write some comments. \par
+\tab\tab public class TeleportShield : BaseShield\line\tab\tab\{\line\tab\tab //take normal damage, but teleport to new location on X\line\tab\tab\{\line\tab\tab\tab Vector 2 currentPos = transform.position; //get current position first.\line\tab\tab\tab currentPos.x = Random.Range(-5f, 5f); //floats. will go to random x-\line\tab\tab\tab\tab\tab\tab\tab\tab position bw -5 and 5. \line\tab\tab\tab transform.position = currentPos; //set it back to the position. \line\tab\tab\tab return damage; //take damage. because you don't have to adjust\line\tab\tab\tab\tab\tab your damage because YOU'RE TELEPORTING WOOOO\line\tab\tab\}\par
+>Let's PLAY IT... HEY! IT'S NOT DOING ANYTHING. WHAT IN THE HECK IS GOING ON. You didn't replace your HalfDamageShield from the Inspector! Replace it with the TeleportShield instead.\par
+>Let's go and review ShipControl.cs\par
+\tab\tab void Start() \line\tab\tab\{\line\tab\tab\tab rb2d = GetComponent<Rigidbody2d>(); \line\tab\tab\tab shield = GetComponent<BaseShield>(); \line\tab\tab\}\par
+\tab\tab ^You're getting whatever shield you have with GetComponent<BaseShield>(); \par
+>\line\tab\tab public void TakeDamage(float damageAmt)\{\line\tab\tab\line\tab\tab if (shield != null) \line\tab\tab\{\line\tab\tab\tab damageAmt = shield.AdjustDamage(damageAmt); \line\tab\tab\}\par
+\tab\tab ^Whatever shield you have, call that shield's VERSION of AdjustDamage. \line\tab\tab Whether it's the TeleportShield, HalfDamageShield, or BaseShield. \par
+>You also did this nifty thing up on your code, where you said...\line\line\tab\tab if (Input.GetKeyDown(KeyCode.B)) //press b and change to base shield\line\tab\tab\{\line\tab\tab\tab Destroy(shield); \line\tab\tab\tab shield = gameObject.AddComponent<BaseShield>(); \line\tab\tab\}\line\tab\tab ^OOh so if you press B for base shield, then you destroy the shield\line\tab\tab and add a new BaseShield. \par
+>What if you want to switch mid-game to a different shield? WWE STYLE LET'S GO\par
+\tab\tab if (Input.GetKeyDown(KeyCode.T))\line\tab\tab\{\line\tab\tab\tab Destroy(shield); \line\tab\tab\tab shield = gameObject.AddComponent<TeleportShield>(); \line\tab\tab\}\par
+>WHOA NOW YOU CAN USE BOTH THOSE SHIELDS. Now add Half-Damage shield!\line\line\tab\tab if(Input.GetKeyDown(KeyCode.H))\line\tab\tab\{\line\tab\tab\tab Destroy(shield); \line\tab\tab\tab shield = gameObject.AddComponent<HalfDamageShield>(); \line\tab\tab\}\par
+>AND NOW THERE ARE THREE SHIELDS YOU HAVE. (This is genuinely cool what the heck) \par
+>Even though Unity doesn't use Object Oriented Programming and the hierarchy in the way we described it as initially, where you build up your GameObjects by adding different components to it, we can STILL use OOP in this context by having a base structure that doesn't care about what specific components you have attached to it, so long as it's involved in the hierarchy. \line\line >We can just keep adding elements of the game in a very simple way. Heck, let's try AbsorbShield! \par
+\tab\tab pubic class AbsorbShield : BaseShield //extends from BaseShield \line\tab\tab\{\line\tab\tab\tab public override float AdjustDamage(float damage)\line\tab\tab\tab\{\line\tab\tab\tab\tab return -damage; \line\tab\tab\tab\}\line\tab\tab\}\par
+\tab\tab\tab ^boom. absorbing shield done.  (that took like 10 secs) \line\tab\tab\tab //NOW YOU GAIN HEALTH. \par
+>AddAbsorbShield on the Inspector. Now the bullets give you health. Crazy, crazy, crazy. \par
+>Let's fight back our enemies with ATTACK now. BaseAttack...? Interesting. What else could we build on top of that BaseAttack? Upgrades? Magic? The possibilities are ENDLESS. \par
+>ATTTTAAAAAAAAAAAAAAAAAAACK \par
+>Let's make a BaseAttack. Make a new Folder called Attacks. \line >Create a new C# script callsed BaseAttack. Open that sucker up.\par
+>Let's start simple. Create the base class. \par
+\tab\tab public class BaseAttack : MonoBehaviour\line\tab\tab\{\line\tab\tab\tab public virtual void Attack() \line\tab\tab\tab\{ \par
+\tab\tab\tab\}\line\tab\tab\}\par
+\tab\tab ^... And that will be it for now. Let's not worry for now; you've just made\line\tab\tab enough so that the rest of your code knows about its existence, and will\line\tab\tab be able to interact with it. \par
+>Now go back to ShipControl.cs. Just like you have declared a BaseShield shield; in the beginning, you will declare BaseAttack attack; \par
+\tab\tab BaseAttack attack; \line\tab\tab //the fact that BaseAttack exists bc of our creatio nof the BaseAttack script,\line\tab\tab means that it can be declared on ShipControl.cs. Sure, there isn't much, \line\tab\tab but it's honest work (meme). \par
+>On Update, let's grab BaseAttack. \par
+\tab\tab void Update()\line\tab\tab\{\line\tab\tab\tab attack = GetComponent<BaseAttack>(); \line\tab\tab\tab //that way, if your attack changes while the game is running,\line\tab\tab\tab you will ALWAYS have the most current attack on your\line\tab\tab\tab update loop. that's why it's on Update. \line\tab\tab\tab //(Yes, this can be costly for your processing. If you find that\line\tab\tab\tab this is too much for your game to handle, you can change it so\line\tab\tab\tab that  it only changes when something happens to it. \par
+\tab\tab\tab if(Input.GetKeyDown(KeyCode.Space)) //when you press space\line\tab\tab\tab\{\line\tab\tab\tab\tab attack.Attack(); //attack \line\tab\tab\tab\}\par
+>Let's go back to your BaseAttack.cs and test it out so that you see if it works. \par
+\tab\tab public class BaseAttack : Monobehaviour\line\tab\tab\{\line\tab\tab\tab public virtual void Attack()\line\tab\tab\tab\{\line\tab\tab\tab\tab Debug.Log("Attack!!!"); \line\tab\tab\tab\}\line\tab\tab\}\par
+>When you run this, you get a null reference??? Why??? \line >EASY. Because you haven't attached your script on the Ship. So now when you run it, you will see the Debug.Log, "Attack!!!"\par
+>Now that you're super duper confident that your ShipControl.cs is doing everything that it's actually supposed to do, back on your BaseAttack.cs script, you want to make it do what you actually WANT it to do when you attack. \par
+>How about we use the Bullet prefab for our Attack? You can Instantiate it. \par
+\tab\tab public class BaseAttack : Monobehaviour\line\tab\tab\{\line\tab\tab\tab public GameObject bulletPrefab; \line\tab\tab\tab //this allows you to Instantiate bullet. make a var\line\tab\tab\tab that you can set in the Inspector. \line\tab\tab\tab (//alternatively, you could make a Resources directory\line\tab\tab\tab and put the Prefab folder inside of there...(?), then \line\tab\tab\tab Instantiate from the Resources... \line\line\tab\tab\tab public virutal void Attack()\line\tab\tab\tab\{\line\tab\tab\tab\tab Debug.Log("Attack!!!"); \line\tab\tab\tab\tab\line\tab\tab\tab\tab GameObject bullet = Instantiate<GameObject>(bulletPrefab); \line\tab\tab\tab\tab //creating the bullet. <GameObject> just is for clarity\line\tab\tab\tab\tab\line\tab\tab\tab\tab Vector2 currentPos = transform.position; \line\tab\tab\tab\tab //this gets the current position\line\line\tab\tab\tab\tab currentPos.y += 1f; \line\tab\tab\tab\tab //set it to 1f on the y-axis. \par
+\tab\tab\tab\tab bullet.transform.position = currentPos; \line\tab\tab\tab\tab //which means that the bullet you made will go to currentPos\line\tab\tab\tab\}\line\tab\tab\}\par
+>Test thje sucker out. REMEMBER TO ATTACH IT TO THE INSPECTOR AAHHHHHHHHHHHH. PUT THE PREFAB INTO THE INSPECTOR. REMEMBER REMEMBER REMEMBER. \line\line >UH OH! The bullet is falling on our ship and hurting us back?? How do we make it so that doesn't happen again? Gosh darn gravity. (Hint: the v-word...) \par
+>Give it velocity. Back on your Attack function, add something for velocity... \par
+\tab\tab\tab\tab bullet.GetComponent<Rigidbody2D>().AddForce(Vector2.up); \line\tab\tab\tab\tab //you get the rigidbody force. then add force (vector2.up). \par
+\tab\tab\tab\tab Vector2 currentPos = transform.position;\line\tab\tab\tab\tab currentPos.y += 1f; \par
+>Hmm, the bullet still seems to be falling... it's because this function is only being applied one time, because it's not in the Update function. You are also dealing with gravity (the rigidbody). And if you were to set it to kinematic, you would move it all... will static move?\par
+>How about we add SO MUCH FORCE that gravity doesn't even apply to it (Beau's suggestion)\line\line\tab\tab\tab\tab\fs20 bullet.GetComponent<RigidBody2D>().AddForce(Vector2.up * 1000); \fs22\par
+>(Side note: this is what's great about code [i actually am starting to agree..]. SOLVING. \par
+>Okay, so when you play it this time... it works! Instead of the bullets immediately just falling back onto your ship, they shoot up like fireworks... and then come back down. That's actually an interesting mechanic! \par
+>Good enough for our purposes. Cool. Make a TripleAttack this time. \par
+>You will still make a new class, called TripleAttack. You can also change BaseAttack (if you want to). You can't change anything else, however. \par
+>First thing's first. You can change the AddForce so they don't fall on you...\line\line\tab\tab\tab\tab bullet.GetComponent<RigidBody2D>().gravityScale = -1; \par
+>But let's make more changes to function Attack. \par
+\tab\tab public virtual void Attack() \line\tab\tab\{\line\tab\tab\tab GameObject bullet = Instantiate<GameObject>(bulletPrefab); \par
+\tab\tab\tab bullet.GetComponent<Rigidbody2D>().gravityScale = -1; \par
+\tab\tab\tab Vector2 currentPos = transform.position; \line\tab\tab\tab currentPos.y += 1f; \par
+\tab\tab\tab bullet.transform.position = currentPos; \line\tab\tab\}\par
+>Let's add a function so that instead of spawning the bullet inside of attack, it has it's own spawnBullet function. [Alessia's method] \par
+\tab\tab public void spawnBullet()\line\tab\tab\{\line\tab\tab\tab GameObject bullet = Instantiate<GameObject>(bulletPrefab); \par
+\tab\tab\tab bullet.GetComponent<Rigidbody2D>().gravityScale = -1; \par
+\tab\tab\tab bullet.transform.position = currentPos; \line\tab\tab\}\par
+\tab\tab ^Now you can call spawnBullet! Wowzers. \par
+>Now what happens to the Attack function...?\line\line\tab\tab public virtual void Attack() \line\tab\tab\{\line\tab\tab\tab Vector2 currentPos = transform.position; \line\tab\tab\tab //you are getting the current position here. \line\tab\tab\tab currentPos.y += 1f; \line\tab\tab\tab //adding so it's right above where the ship is. \line\line\tab\tab\tab spawnBullet(currentPos); \line\tab\tab\}\par
+>Matt did not agree with this, and added Vector2 currentPos onto the function spawnBullet.\par
+\tab\tab public void SpawnBullet(Vector2 currentPos)\line\tab\tab //you're passing the currentPos into spawnBullet. \line\tab\tab\{\line\tab\tab\tab GameObject bullet = Instantiate<GameObject>(bulletPrefab); \line\tab\tab\tab //you spawn the bullet\par
+\tab\tab\tab bullet.GetComponent<Rigidbody2D>().gravityScale = -1; \line\tab\tab\tab //reverse the gravity so that it goes up \par
+\tab\tab\tab bullet.transform.position = currentPos; \line\tab\tab\tab //set the position of the bullet to wherever you passed onto\line\tab\tab\tab SpawnBullet(currentPos); \line\tab\tab\}\par
+>Remember, because you are in BaseAttack, this only spawns one bullet as for now. \par
+>Now you are going to make a new C# script, called TripleAttack.\par
+\tab\tab public class TripleAttack : BaseAttack \line\tab\tab //you don't need TripleAttack to extend from Monobehaviour\line\tab\tab bc BaseAttack is a super-class and is extending from Monobehaviour\line\tab\tab\line\tab\tab\{\line\tab\tab\tab public override void Attack()\line\tab\tab\tab\{\line\tab\tab\tab\tab base.Attack(); \line\tab\tab\tab\tab base.Attack(); \line\tab\tab\tab\tab base.Attack(); \line\tab\tab\tab\tab //i mean, TECHNICALLY this does \line\tab\tab\tab\tab spawn 3 bullets... \line\tab\tab\tab\}\line\tab\tab\}\par
+>Okay, so it's sort of(?) a Triple Attack. But it looks weird. Unity is not happy. Gamers will not be happy. It's weird. \par
+>Let's say you want to override what's on SpawnBullet - > go back to BaseAttack script. But you cannot, because of something in the script that is lacking \i virtual... \i0  \par
+\tab\tab public virtual void SpawnBullet(Vector2 currentPos)\line\tab\tab\{\line\tab\tab\tab GameObject bullet = Instantiate<GameObject>(bulletPrefab); \par
+\tab\tab\tab bullet.GetComponent<Rigidbody2D>().gravityScale = -1; \par
+\tab\tab\tab bullet.transform.position = currentPos; \line\tab\tab\}\par
+>Now when you go back to TripleAttack, you CAN NOW OVERRIDE SPAWN BULLET!!!\par
+\tab\tab public class TripleAttack : BaseAttack \line\tab\tab\{\line\tab\tab\tab public override void SpawnBullet(Vector2 currentPos) \line\tab\tab\tab\{\line\tab\tab\tab\tab base.SpawnBullet(currentPos); \line\tab\tab\tab\}\line\tab\tab\}\par
+>You could use a for-loop... OR... you could... \par
+>What does SpawnBullet do? What does the base version of SpawnBullet do? It Instiates a bullet based on the position that you pass into it \fs16 (public virtual void SpawnBullet(Vector 2 currentPos) \fs22\par
+>So let's spawn three bullets that are all a little distanced away from each other!\par
+>Let's say that after you call base.SpawnBullet(currentPos);, you CHANGE currentPos a little bit... \par
+\tab\tab public class TripleAttack : BaseAttack\line\tab\tab\{\line\tab\tab\tab public override void SpawnBullet(Vector2 currentPos)\line\tab\tab\tab\{\line\tab\tab\tab\tab base.SpawnBullet(currentPos); \line\tab\tab\tab\tab //spawn bullet at current pos\line\tab\tab\tab\tab currentPos.x += 0.5f; //move bullet to new pos\line\tab\tab\tab\tab base.SpawnBullet(currentPos); //spawn bullet\line\tab\tab\tab\tab currentPos.x -= 1f; //move\line\tab\tab\tab\tab base.SpawnBullet(currentPos); //spawn bullet\line\tab\tab\tab\}\line\tab\tab\}\par
+\tab\tab ^REMEMBER! You don't even need the function Attack anymore because\line\tab\tab it's already a part of the BaseAttack. HIERARCHY. \par
+>You start to see how OP this is. How powerful. The possibilites. You can keep making these foundations more and more flexible, and overriding them so you make what you want to make. \par
+>Let's REVIEW ONE MORE TIME. \par
+>In ShipControl.cs, we call attack...\par
+\tab\tab void Update()\line\tab\tab\{\line\tab\tab\tab attack = GetComponent<BaseAttack>(); \par
+\tab\tab\tab if (Input.GetKeyDown(KeyCode.Space)) //press space\line\tab\tab\tab\{\line\tab\tab\tab\tab attack.Attack(); //call attack \line\tab\tab\tab\}\par
+\tab\tab ^This will go into TripleAttack because we have BaseAttack\line\tab\tab attached to it. \line\tab\tab ^We are able to use this function as if it's in TripleAttack,\line\tab\tab bc it's extended from BaseAttack. Easy. \line\line >The script in BaseAttack.cs makes the currentPos, and passes that down to SpawnBullet.\par
+>[Use this nifty tool for your final] \par
+\par
+\par
+\par
+\par
+\par
+}
+ 
